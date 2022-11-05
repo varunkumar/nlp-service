@@ -5,13 +5,16 @@ import sys
 from pathlib import Path
 
 import openai
+import requests
 from dotenv import load_dotenv
-from flask import Flask, Response, request
+from flask import Flask, Response, request, stream_with_context
 from flask_cors import CORS
 
 logger = logging.getLogger(__name__)
 null = None
 description = "Natural language interface for database queries"
+
+SUPERSET_URL = "http://localhost:8088"
 
 app = Flask(__name__)
 CORS(app)
@@ -67,6 +70,38 @@ def ask_data():
 @app.route("/api/healthcheck", methods=["GET"])
 def healthcheck():
     return Response("200 Ok"), 200
+
+
+method_requests_mapping = {
+    "GET": requests.get,
+    "HEAD": requests.head,
+    "POST": requests.post,
+    "PUT": requests.put,
+    "DELETE": requests.delete,
+    "PATCH": requests.patch,
+    "OPTIONS": requests.options,
+}
+
+
+@app.route("/api/proxy/<path:url>", methods=method_requests_mapping.keys())
+def proxy(url):
+    requests_function = method_requests_mapping[request.method]
+    req = requests_function(
+        f"{SUPERSET_URL}/api/{url}",
+        stream=True,
+        params=request.args,
+        headers=request.headers,
+    )
+    logger.info(request.headers)
+    logger.info(req.headers)
+    response = Response(
+        stream_with_context(req.iter_content()),
+        content_type=req.headers["content-type"],
+        status=req.status_code,
+    )
+    if "Content-Encoding" in req.headers:
+        response.headers["Content-Encoding"] = req.headers["Content-Encoding"]
+    return response
 
 
 def test():
