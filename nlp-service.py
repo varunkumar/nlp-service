@@ -30,10 +30,10 @@ def get_args_parser():
 def ask_ai(question):
     logger.info("Requesting OpenAI for %s" % question)
     response = openai.Completion.create(
-        engine="davinci",
+        engine="text-davinci-002",
         prompt=question,
         temperature=0.7,
-        max_tokens=64,
+        max_tokens=256,
         top_p=1.0,
         frequency_penalty=0.0,
         presence_penalty=0.0,
