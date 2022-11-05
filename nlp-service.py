@@ -28,6 +28,10 @@ def get_args_parser():
 
 
 def cleanup_response(response):
+    response = response.replace("Output:", "")
+    response = response.replace("Input:", "")
+    response = response.trim()
+    response = response.strip()
     return response.replace("Output:", "").strip()
 
 
@@ -44,7 +48,7 @@ def ask_ai(question):
     )
     response = response.choices[0].text
     clean_response = cleanup_response(response)
-    return response
+    return clean_response
 
 
 @app.route("/api/askdata", methods=["POST"])
