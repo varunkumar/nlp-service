@@ -85,23 +85,29 @@ method_requests_mapping = {
 
 @app.route("/api/proxy/<path:url>", methods=method_requests_mapping.keys())
 def proxy(url):
-    requests_function = method_requests_mapping[request.method]
-    req = requests_function(
-        f"{SUPERSET_URL}/api/{url}",
-        stream=True,
-        params=request.args,
-        headers=request.headers,
-    )
-    logger.info(request.headers)
-    logger.info(req.headers)
-    response = Response(
-        stream_with_context(req.iter_content()),
-        content_type=req.headers["content-type"],
-        status=req.status_code,
-    )
-    if "Content-Encoding" in req.headers:
-        response.headers["Content-Encoding"] = req.headers["Content-Encoding"]
-    return response
+    logger.info(f"Proxying request to {url} [{request.method}]")
+    try:
+        requests_function = method_requests_mapping[request.method]
+        req = requests_function(
+            f"{SUPERSET_URL}/api/{url}",
+            stream=True,
+            data=request.get_data(),
+            params=request.args,
+            headers=request.headers,
+        )
+        logger.debug(request.headers)
+        logger.debug(req.headers)
+        response = Response(
+            stream_with_context(req.iter_content()),
+            content_type=req.headers["content-type"],
+            status=req.status_code,
+        )
+        if "Content-Encoding" in req.headers:
+            response.headers["Content-Encoding"] = req.headers["Content-Encoding"]
+        return response
+    except Exception as e:
+        logger.error(e)
+        return Response(), 500
 
 
 def test():
