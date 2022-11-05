@@ -27,6 +27,10 @@ def get_args_parser():
     return parser
 
 
+def cleanup_response(response):
+    return response.replace("Output:", "").strip()
+
+
 def ask_ai(question):
     logger.info("Requesting OpenAI for %s" % question)
     response = openai.Completion.create(
@@ -39,6 +43,7 @@ def ask_ai(question):
         presence_penalty=0.0,
     )
     response = response.choices[0].text
+    clean_response = cleanup_response(response)
     return response
 
 
