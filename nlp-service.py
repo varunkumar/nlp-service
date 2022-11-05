@@ -30,7 +30,6 @@ def get_args_parser():
 def cleanup_response(response):
     response = response.replace("Output:", "")
     response = response.replace("Input:", "")
-    response = response.trim()
     response = response.strip()
     return response.replace("Output:", "").strip()
 
