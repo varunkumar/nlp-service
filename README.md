@@ -17,3 +17,5 @@ Check out the [example](example) folder for a working example.
 ```
 python ./nlp-service.py
 ```
+
+Built with 💗 @ Arcesium Hackathon 2022. Won the `Best Application of Data Analytics & Visualization` award in the hackathon. 
